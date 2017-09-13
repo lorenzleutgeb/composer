@@ -212,6 +212,9 @@ class Solver
 
         $this->setupInstalledMap();
         $this->rules = $this->ruleSetGenerator->getRulesFor($this->jobs, $this->installedMap, $ignorePlatformReqs);
+
+        file_put_contents("composer" . uniqid() . ".cnf", $this->rules->toDIMACS($this->pool));
+
         $this->checkForRootRequireProblems($ignorePlatformReqs);
         $this->decisions = new Decisions($this->pool);
         $this->watchGraph = new RuleWatchGraph;
@@ -223,10 +226,10 @@ class Solver
         /* make decisions based on job/update assertions */
         $this->makeAssertionRuleDecisions();
 
-        $this->io->writeError('Resolving dependencies through SAT', true, IOInterface::DEBUG);
+        echo "\nResolving dependencies through SAT\n";
         $before = microtime(true);
         $this->runSat(true);
-        $this->io->writeError(sprintf('Dependency resolution completed in %.3f seconds', microtime(true) - $before), true, IOInterface::VERBOSE);
+        echo sprintf("\nDependency resolution completed in %.3f seconds\n", microtime(true) - $before);
 
         // decide to remove everything that's installed and undecided
         foreach ($this->installedMap as $packageId => $void) {
